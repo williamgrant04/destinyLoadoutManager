@@ -1,9 +1,16 @@
 import { useState } from 'react'
+import LoginModal from './components/bungieAuth/LoginModal'
+import styled from 'styled-components'
 
-function App() {
+const App = () => {
+
+  // useEffect(() => {
+  //   console.log(window.location.href)
+  // }, [])
 
   return (
     <>
+      <LoginModal/>
     </>
   )
 }
