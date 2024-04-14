@@ -23,7 +23,7 @@ const LoadoutPanel = (props) => {
     <>
       <LoadoutBackdrop>
         <LoadoutPill onClick={ pillClickHandler }>
-          <FontAwesomeIcon icon={ faBars } className="hamburger"/>
+          <FontAwesomeIcon icon={ faBars }/>
         </LoadoutPill>
         <h2>LOADOUTS</h2>
         <ButtonGrid>
@@ -67,7 +67,7 @@ const LoadoutPill = styled.button`
   border: none;
   border-radius: 0 50% 50% 0;
 
-  .hamburger {
+  .fa-bars {
     font-size: 22px;
   }
 `
