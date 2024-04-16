@@ -1,14 +1,16 @@
 import styled from "styled-components"
 import ReactModal from "react-modal"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useContext } from "react"
 import axios from "axios"
+import APIContext from "../../store/bungieAPIContext"
 
 
 const LoginModal = (props) => {
   // TODO: Honestly I should refactor all of this
   ReactModal.setAppElement("#root")
+  const api = useContext(APIContext)
 
-  const [modalOpen, setModalOpen] = useState(true)
+  const [modalOpen, setModalOpen] = useState(false)
   const [bungieUrl, setBungieUrl] = useState("")
 
   useEffect(()=> {
@@ -16,17 +18,19 @@ const LoginModal = (props) => {
       // * See comments in checkAuth
       setModalOpen(false) // Close the modal
     } else {
+      setModalOpen(true)
       const params = checkURLParams() // Returns an object with params
       if (params) {
         if (checkState(params.state)) {
           // I fucking hate promises
           getTokens(params.code).then((response) => {
             localStorage.setItem("tokens", JSON.stringify(response.data))
+            api.setPrimaryID()
             setModalOpen(false)
           })
         }
       } else {
-        // * URL doesn't have params so gen the url 
+        // * URL doesn't have params so gen the url
         generateUrl().then(response => setBungieUrl(response.data)) // Generate bungie URL to put on the button
       }
     }
