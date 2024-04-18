@@ -5,9 +5,7 @@ import { APIContextProvider } from './store/bungieAPIContext.jsx'
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <APIContextProvider>
-      <App />
-    </APIContextProvider>
-  </React.StrictMode>,
+  <APIContextProvider>
+    <App />
+  </APIContextProvider>,
 )

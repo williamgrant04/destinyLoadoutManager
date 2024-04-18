@@ -1,0 +1,107 @@
+[1mdiff --git a/src/components/loadout/LoadoutPanel.jsx b/src/components/loadout/LoadoutPanel.jsx[m
+[1mindex 7cdea01..1750618 100644[m
+[1m--- a/src/components/loadout/LoadoutPanel.jsx[m
+[1m+++ b/src/components/loadout/LoadoutPanel.jsx[m
+[36m@@ -13,7 +13,7 @@[m [mconst LoadoutPanel = (props) => {[m
+   const pillClickHandler = (e) => {[m
+     setPanelOpen(!panelOpen)[m
+ [m
+[31m-    api.setPrimaryID()[m
+[32m+[m[32m    api.saveManifest()[m
+ [m
+     if (panelOpen) {[m
+       e.currentTarget.parentElement.style.left = "-20%"[m
+[1mdiff --git a/src/main.jsx b/src/main.jsx[m
+[1mindex 5a6a6ce..a5a0b7e 100644[m
+[1m--- a/src/main.jsx[m
+[1m+++ b/src/main.jsx[m
+[36m@@ -5,9 +5,7 @@[m [mimport { APIContextProvider } from './store/bungieAPIContext.jsx'[m
+ [m
+ [m
+ ReactDOM.createRoot(document.getElementById('root')).render([m
+[31m-  <React.StrictMode>[m
+[31m-    <APIContextProvider>[m
+[31m-      <App />[m
+[31m-    </APIContextProvider>[m
+[31m-  </React.StrictMode>,[m
+[32m+[m[32m  <APIContextProvider>[m
+[32m+[m[32m    <App />[m
+[32m+[m[32m  </APIContextProvider>,[m
+ )[m
+[1mdiff --git a/src/store/bungieAPIContext.jsx b/src/store/bungieAPIContext.jsx[m
+[1mindex f0ebfe0..fc6633f 100644[m
+[1m--- a/src/store/bungieAPIContext.jsx[m
+[1m+++ b/src/store/bungieAPIContext.jsx[m
+[36m@@ -3,12 +3,42 @@[m [mimport axios from "axios"[m
+ [m
+ const APIContext = createContext({[m
+   refresh_token: () => {},[m
+[31m-  setPrimaryID: () => {}[m
+[32m+[m[32m  setPrimaryID: () => {},[m
+[32m+[m[32m  getManifest: () => {},[m
+[32m+[m[32m  saveManifest: () => {}[m
+ })[m
+ [m
+ [m
+ export const APIContextProvider = ({ children }) => {[m
+ [m
+[32m+[m[32m  const getDestinyManifest = async () => {[m
+[32m+[m[32m    const jsonPaths = [[m
+[32m+[m[32m      "InventoryItem",[m
+[32m+[m[32m      "InventoryBucket",[m
+[32m+[m[32m      "Class",[m
+[32m+[m[32m      "DamageType"[m
+[32m+[m[32m    ][m
+[32m+[m
+[32m+[m
+[32m+[m[32m    const res = await axios.get("https://www.bungie.net/Platform/Destiny2/Manifest")[m
+[32m+[m[32m    // Hardcoding en because I speak english idk[m
+[32m+[m[32m    const components = res.data.Response.jsonWorldComponentContentPaths.en[m
+[32m+[m
+[32m+[m[32m    const manifest = {}[m
+[32m+[m[32m    const manifests = jsonPaths.map(p => `Destiny${p}Definition`).map(async (path) => {[m
+[32m+[m[32m      const manifestContent = await axios.get(`https://www.bungie.net${components[path]}`)[m
+[32m+[m[32m      manifest[path] = manifestContent.data[m
+[32m+[m[32m    })[m
+[32m+[m
+[32m+[m[32m    await Promise.all(manifests)[m
+[32m+[m
+[32m+[m[32m    return manifest[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  const saveManifestToIndexedDB = async () => {[m
+[32m+[m[32m    // const manifest = await getDestinyManifest()[m
+[32m+[m[32m  }[m
+[32m+[m
+   const setPrimaryMembershipID = async () => {[m
+     const tokens = JSON.parse(localStorage.getItem("tokens"))[m
+     const res = await axios.get("https://www.bungie.net/Platform/User/GetMembershipsForCurrentUser/", {[m
+[36m@@ -40,7 +70,7 @@[m [mexport const APIContextProvider = ({ children }) => {[m
+       }[m
+     })[m
+ [m
+[31m-    localStorage.setItem("tokens", res.data)[m
+[32m+[m[32m    localStorage.setItem("tokens", JSON.stringify(res.data))[m
+   }[m
+ [m
+   axios.interceptors.response.use((response) => {[m
+[36m@@ -51,7 +81,7 @@[m [mexport const APIContextProvider = ({ children }) => {[m
+     console.log(error)[m
+     if (error?.response?.status === 401) {[m
+       const originalRequest = error.config[m
+[31m-      refreshAccessToken()[m
+[32m+[m[32m      await refreshAccessToken()[m
+       const tokens = JSON.parse(localStorage.getItem("tokens"))[m
+ [m
+       originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`[m
+[36m@@ -64,7 +94,9 @@[m [mexport const APIContextProvider = ({ children }) => {[m
+   return ([m
+     <APIContext.Provider value={{[m
+       refresh_token: refreshAccessToken,[m
+[31m-      setPrimaryID: setPrimaryMembershipID[m
+[32m+[m[32m      setPrimaryID: setPrimaryMembershipID,[m
+[32m+[m[32m      getManifest: getDestinyManifest,[m
+[32m+[m[32m      saveManifest: saveManifestToIndexedDB[m
+     }}>[m
+       { children }[m
+     </APIContext.Provider>[m

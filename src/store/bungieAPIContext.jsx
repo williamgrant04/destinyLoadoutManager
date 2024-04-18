@@ -3,11 +3,41 @@ import axios from "axios"
 
 const APIContext = createContext({
   refresh_token: () => {},
-  setPrimaryID: () => {}
+  setPrimaryID: () => {},
+  getManifest: () => {},
+  saveManifest: () => {}
 })
 
 
 export const APIContextProvider = ({ children }) => {
+
+  const getDestinyManifest = async () => {
+    const jsonPaths = [
+      "InventoryItem",
+      "InventoryBucket",
+      "Class",
+      "DamageType"
+    ]
+
+
+    const res = await axios.get("https://www.bungie.net/Platform/Destiny2/Manifest")
+    // Hardcoding en because I speak english idk
+    const components = res.data.Response.jsonWorldComponentContentPaths.en
+
+    const manifest = {}
+    const manifests = jsonPaths.map(p => `Destiny${p}Definition`).map(async (path) => {
+      const manifestContent = await axios.get(`https://www.bungie.net${components[path]}`)
+      manifest[path] = manifestContent.data
+    })
+
+    await Promise.all(manifests)
+
+    return manifest
+  }
+
+  const saveManifestToIndexedDB = async () => {
+    // const manifest = await getDestinyManifest()
+  }
 
   const setPrimaryMembershipID = async () => {
     const tokens = JSON.parse(localStorage.getItem("tokens"))
@@ -40,7 +70,7 @@ export const APIContextProvider = ({ children }) => {
       }
     })
 
-    localStorage.setItem("tokens", res.data)
+    localStorage.setItem("tokens", JSON.stringify(res.data))
   }
 
   axios.interceptors.response.use((response) => {
@@ -51,7 +81,7 @@ export const APIContextProvider = ({ children }) => {
     console.log(error)
     if (error?.response?.status === 401) {
       const originalRequest = error.config
-      refreshAccessToken()
+      await refreshAccessToken()
       const tokens = JSON.parse(localStorage.getItem("tokens"))
 
       originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`
@@ -64,7 +94,9 @@ export const APIContextProvider = ({ children }) => {
   return (
     <APIContext.Provider value={{
       refresh_token: refreshAccessToken,
-      setPrimaryID: setPrimaryMembershipID
+      setPrimaryID: setPrimaryMembershipID,
+      getManifest: getDestinyManifest,
+      saveManifest: saveManifestToIndexedDB
     }}>
       { children }
     </APIContext.Provider>
