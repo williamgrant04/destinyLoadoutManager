@@ -1,5 +1,6 @@
 import { createContext } from "react"
 import axios from "axios"
+import { openDB } from "./indexedDBHandler"
 
 const APIContext = createContext({
   refresh_token: () => {},
@@ -11,32 +12,65 @@ const APIContext = createContext({
 
 export const APIContextProvider = ({ children }) => {
 
+  const getDestinyAPIManifest = async (components, whitelist) => {
+    const manifest = {}
+    const manifests = whitelist.map(p => `Destiny${p}Definition`).map(async (path) => {
+      const manifestContent = await axios.get(`https://www.bungie.net${components[path]}`)
+      manifest[path] = manifestContent.data
+    })
+    await Promise.all(manifests) // Wait for all calls to finish before trying to return anything
+    return manifest
+  }
+
   const getDestinyManifest = async () => {
-    const jsonPaths = [
+    const whitelist = [
       "InventoryItem",
       "InventoryBucket",
       "Class",
       "DamageType"
     ]
 
-
     const res = await axios.get("https://www.bungie.net/Platform/Destiny2/Manifest")
-    // Hardcoding en because I speak english idk
-    const components = res.data.Response.jsonWorldComponentContentPaths.en
 
-    const manifest = {}
-    const manifests = jsonPaths.map(p => `Destiny${p}Definition`).map(async (path) => {
-      const manifestContent = await axios.get(`https://www.bungie.net${components[path]}`)
-      manifest[path] = manifestContent.data
-    })
+    // Save this as a version because bungie apparently doesn't update the actual version manifest value sometimes
+    // (Thank you dim for being open source)
+    const version = res.data.Response.jsonWorldContentPaths.en
 
-    await Promise.all(manifests)
+    // If a version is already cached don't try to load everything
+    if (checkManifestCache(version)) { return null }
+    let manifest = {}
+    try {
+      const components = res.data.Response.jsonWorldComponentContentPaths.en // Hardcoding en because I speak english idk
+      manifest = await getDestinyAPIManifest(components, whitelist)
+    } catch (error) {
+      localStorage.removeItem("manifest-version")
+      console.error("Error fetching manifest: ", error)
+    }
 
     return manifest
   }
 
+  const checkManifestCache = (version) => {
+    const storedVersion = localStorage.getItem("manifest-version")
+    if (!storedVersion || storedVersion !== version) {
+      localStorage.setItem("manifest-version", version)
+      return false
+    }
+    // else
+    return true
+  }
+
   const saveManifestToIndexedDB = async () => {
-    // const manifest = await getDestinyManifest()
+    const manifest = await getDestinyManifest()
+
+    // No need to save something already saved
+    if (!manifest) {
+      console.log("Manifest already cached.")
+      return
+    }
+
+    // TODO: Actually save it to indexeddb
+    console.log(manifest)
   }
 
   const setPrimaryMembershipID = async () => {
