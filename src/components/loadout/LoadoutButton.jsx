@@ -1,5 +1,6 @@
 import styled from "styled-components"
 
+/* eslint-disable react/prop-types */
 const LoadoutButton = (props) => {
   return (
     <StyledLoadoutButton>

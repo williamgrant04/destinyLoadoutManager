@@ -1,6 +1,6 @@
 import { createContext } from "react"
 import axios from "axios"
-import { openDB } from "./indexedDBHandler"
+import { initDB, putData } from "./indexedDBHandler"
 
 const APIContext = createContext({
   refresh_token: () => {},
@@ -9,7 +9,7 @@ const APIContext = createContext({
   saveManifest: () => {}
 })
 
-
+/* eslint-disable react/prop-types */
 export const APIContextProvider = ({ children }) => {
 
   const getDestinyAPIManifest = async (components, whitelist) => {
@@ -56,7 +56,7 @@ export const APIContextProvider = ({ children }) => {
       localStorage.setItem("manifest-version", version)
       return false
     }
-    // else
+
     return true
   }
 
@@ -69,8 +69,9 @@ export const APIContextProvider = ({ children }) => {
       return
     }
 
-    // TODO: Actually save it to indexeddb
-    console.log(manifest)
+    if (await initDB()) {
+      const data = await putData(manifest)
+    }
   }
 
   const setPrimaryMembershipID = async () => {
@@ -136,6 +137,5 @@ export const APIContextProvider = ({ children }) => {
     </APIContext.Provider>
   )
 }
-
 
 export default APIContext

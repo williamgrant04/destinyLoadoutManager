@@ -5,7 +5,7 @@ import axios from "axios"
 import APIContext from "../../store/bungieAPIContext"
 
 
-const LoginModal = (props) => {
+const LoginModal = () => {
   ReactModal.setAppElement("#root")
   const api = useContext(APIContext)
 
@@ -36,7 +36,7 @@ const LoginModal = (props) => {
         }).then(response => setBungieUrl(response.data))
       }
     }
-  }, [])
+  }, [api])
 
   const checkURLParams = () => {
     const urlParams = window.location.href.split("?")[1]

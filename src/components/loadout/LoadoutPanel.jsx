@@ -1,12 +1,11 @@
-import { useContext, useEffect, useState } from "react"
+import { useContext, useState } from "react"
 import LoadoutButton from "./LoadoutButton"
 import { styled } from "styled-components"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
-import axios from "axios"
 import APIContext from "../../store/bungieAPIContext"
 
-const LoadoutPanel = (props) => {
+const LoadoutPanel = () => {
   const [panelOpen, setPanelOpen] = useState(false)
   const api = useContext(APIContext)
 
