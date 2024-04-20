@@ -70,7 +70,7 @@ export const APIContextProvider = ({ children }) => {
     }
 
     if (await initDB()) {
-      const data = await putData(manifest)
+      putData(manifest)
     }
   }
 

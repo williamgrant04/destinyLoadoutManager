@@ -1,4 +1,3 @@
-// Basically ignore this file right now because I'm still just pissing around with the manifest
 export const initDB = () => {
   return new Promise((resolve) => {
     const dbRequest = indexedDB.open("store")
