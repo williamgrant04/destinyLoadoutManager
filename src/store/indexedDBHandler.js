@@ -14,7 +14,7 @@ export const initDB = () => {
       }
     }
 
-    dbRequest.onsuccess = (event) => {
+    dbRequest.onsuccess = () => {
       resolve(true)
     }
   })

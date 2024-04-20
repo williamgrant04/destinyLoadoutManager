@@ -12,7 +12,7 @@ const LoadoutPanel = () => {
   const pillClickHandler = (e) => {
     setPanelOpen(!panelOpen)
 
-    api.saveManifest()
+    api.getItems()
 
     if (panelOpen) {
       e.currentTarget.parentElement.style.left = "-20%"

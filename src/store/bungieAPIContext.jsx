@@ -6,7 +6,9 @@ const APIContext = createContext({
   refresh_token: () => {},
   setPrimaryID: () => {},
   getManifest: () => {},
-  saveManifest: () => {}
+  saveManifest: () => {},
+  getProfile: () => {},
+  getItems: () => {}
 })
 
 /* eslint-disable react/prop-types */
@@ -20,6 +22,28 @@ export const APIContextProvider = ({ children }) => {
     })
     await Promise.all(manifests) // Wait for all calls to finish before trying to return anything
     return manifest
+  }
+
+  const getProfile = async () => {
+    const user = JSON.parse(localStorage.getItem("primaryID"))
+    const tokens = JSON.parse(localStorage.getItem("tokens"))
+    const response = await axios.get(`https://www.bungie.net/Platform/Destiny2/${user.type}/Profile/${user.id}`, {
+      headers: {
+        "x-api-key": `${import.meta.env.VITE_BUNGIE_API_KEY}`,
+        Authorization: `Bearer ${tokens.access_token}`
+      },
+      params: {
+        components: "100,102,200,201"
+      }
+    })
+
+    return response.data.Response
+  }
+
+  const getItemsFromProfile = () => {
+    const test = getProfile().then((profile) => {
+      const vaultItems = profile.profileInventory.data.items.filter(item => item.itemInstanceId != null)
+    })
   }
 
   const getDestinyManifest = async () => {
@@ -131,7 +155,9 @@ export const APIContextProvider = ({ children }) => {
       refresh_token: refreshAccessToken,
       setPrimaryID: setPrimaryMembershipID,
       getManifest: getDestinyManifest,
-      saveManifest: saveManifestToIndexedDB
+      saveManifest: saveManifestToIndexedDB,
+      getProfile: getProfile,
+      getItems: getItemsFromProfile
     }}>
       { children }
     </APIContext.Provider>
