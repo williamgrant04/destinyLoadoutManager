@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom/client'
-import App from './App.js'
-import { APIContextProvider } from './store/bungieAPIContext.js'
+import App from './App.tsx'
+import { APIContextProvider } from './store/bungieAPIContext.tsx'
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
