@@ -6,7 +6,6 @@ import APIContext from "../../store/bungieAPIContext"
 
 
 const LoginModal = (props) => {
-  // TODO: Honestly I should refactor all of this
   ReactModal.setAppElement("#root")
   const api = useContext(APIContext)
 
@@ -14,50 +13,36 @@ const LoginModal = (props) => {
   const [bungieUrl, setBungieUrl] = useState("")
 
   useEffect(()=> {
-    if (checkAuth()) {
-      // * See comments in checkAuth
-      setModalOpen(false) // Close the modal
+    if (localStorage.getItem("tokens")) {
+      // User has auth'd, so tokens exist.
+      setModalOpen(false)
     } else {
+      // User hasn't authenticated with Bungie so their tokens aren't stored in the browser
       setModalOpen(true)
       const params = checkURLParams() // Returns an object with params
-      if (params) {
-        if (checkState(params.state)) {
-          // I fucking hate promises
-          getTokens(params.code).then((response) => {
-            localStorage.setItem("tokens", JSON.stringify(response.data))
-            api.setPrimaryID()
-            setModalOpen(false)
-          })
-        }
+      if (params && checkState(params.state)) {
+        // I fucking hate promises
+        getTokens(params.code).then((response) => {
+          localStorage.setItem("tokens", JSON.stringify(response.data))
+          api.setPrimaryID()
+          setModalOpen(false)
+        })
       } else {
-        // * URL doesn't have params so gen the url
-        generateUrl().then(response => setBungieUrl(response.data)) // Generate bungie URL to put on the button
+        // URL doesn't have params so gen the url
+        axios.get("http://localhost:3001/genurl", {
+          headers: {
+            "Authorization": `Bearer ${import.meta.env.VITE_DLM_API_KEY}`
+          }
+        }).then(response => setBungieUrl(response.data))
       }
     }
   }, [])
 
-  const checkAuth = () => {
-    // * User hasn't authenticated with Bungie so their tokens aren't stored in the browser
-    if (localStorage.getItem("tokens") === null) { return false }
-    // * User has, so tokens exist. If they aren't valid tokens that'll be handled elsewhere
-    return true
-  }
-
-  const generateUrl = async () => {
-    // * Request backend for the generated url using the api key
-    return await axios.get("http://localhost:3001/genurl", {
-      headers: {
-        "Authorization": `Bearer ${import.meta.env.VITE_DLM_API_KEY}`
-      }
-    })
-  }
-
   const checkURLParams = () => {
-    // * Get the params from the url
     const urlParams = window.location.href.split("?")[1]
 
     if (urlParams) {
-      // * Wipe the code and state from the url and return an object with the values of the params
+      // Wipe the code and state from the url and return an object with the values of the params
       window.history.replaceState({}, "", "https://localhost:5173/")
       return {
         code: urlParams.split("&")[0].split("=")[1],
@@ -65,13 +50,10 @@ const LoginModal = (props) => {
       }
     }
 
-    // * If there are none then there's no need to try to authenticate
+    // If there are none then there's no need to try to authenticate
     return null
   }
 
-
-
-  // ? Should I combine these two functions considering one literally just returns a boolean
   const getTokens = async (code) => {
     return await axios.get(`http://localhost:3001/tokens?code=${code}`, {
       headers: {
@@ -86,10 +68,8 @@ const LoginModal = (props) => {
         "Authorization": `Bearer ${import.meta.env.VITE_DLM_API_KEY}`
       }
     })
-
     // State was valid and matched, so the check passed
     if (res.status === 200) { return true }
-
     // State was not valid in some way, check failed
     return false
   }
