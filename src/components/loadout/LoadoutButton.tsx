@@ -1,7 +1,6 @@
 import styled from "styled-components"
 
-/* eslint-disable react/prop-types */
-const LoadoutButton = (props) => {
+const LoadoutButton = (props: {image: string}) => {
   return (
     <StyledLoadoutButton>
       <img src="requestbungieapifortheimage" alt={props.image} />

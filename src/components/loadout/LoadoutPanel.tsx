@@ -5,19 +5,21 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import APIContext from "../../store/bungieAPIContext"
 
-const LoadoutPanel = () => {
+
+
+const LoadoutPanel = (): React.JSX.Element => {
   const [panelOpen, setPanelOpen] = useState(false)
   const api = useContext(APIContext)
 
-  const pillClickHandler = (e) => {
+  const pillClickHandler = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     setPanelOpen(!panelOpen)
 
     api.getItems()
 
     if (panelOpen) {
-      e.currentTarget.parentElement.style.left = "-20%"
+      (event.currentTarget as HTMLElement).parentElement!.style.left = "-20%"
     } else {
-      e.currentTarget.parentElement.style.left = "0"
+      (event.currentTarget as HTMLElement).parentElement!.style.left = "0"
     }
   }
 
@@ -30,7 +32,7 @@ const LoadoutPanel = () => {
         </LoadoutPill>
         <h2>LOADOUTS</h2>
         <ButtonGrid>
-          { [...Array(28)].map((_, i) => <LoadoutButton key={ i } image={i}></LoadoutButton>) }
+          { [...Array(28)].map((_, i) => <LoadoutButton key={ i } image={`${i}`}></LoadoutButton>) }
         </ButtonGrid>
       </LoadoutBackdrop>
     </>
@@ -56,7 +58,7 @@ const LoadoutBackdrop = styled.div`
   }
 `
 
-const LoadoutPill = styled.button`
+const LoadoutPill = styled.button<{ onClick?: React.MouseEventHandler<HTMLButtonElement> }>`
   background-color: orange;
   height: 50px;
   width: 50px;
