@@ -1,18 +1,18 @@
 import styled from "styled-components"
 import ReactModal from "react-modal"
-import { useState, useEffect, useContext } from "react"
+import React, { useState, useEffect, useContext, useCallback } from "react"
 import axios from "axios"
 import APIContext from "../../store/bungieAPIContext"
 
 
-const LoginModal = () => {
+const LoginModal = (): React.JSX.Element => {
   ReactModal.setAppElement("#root")
   const api = useContext(APIContext)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [bungieUrl, setBungieUrl] = useState("")
 
-  useEffect(()=> {
+  const handleAuth = useCallback(async () => {
     if (localStorage.getItem("tokens")) {
       // User has auth'd, so tokens exist.
       setModalOpen(false)
@@ -20,7 +20,7 @@ const LoginModal = () => {
       // User hasn't authenticated with Bungie so their tokens aren't stored in the browser
       setModalOpen(true)
       const params = checkURLParams() // Returns an object with params
-      if (params && checkState(params.state)) {
+      if (params && await checkState(params.state)) {
         // I fucking hate promises
         getTokens(params.code).then((response) => {
           localStorage.setItem("tokens", JSON.stringify(response.data))
@@ -38,7 +38,12 @@ const LoginModal = () => {
     }
   }, [api])
 
-  const checkURLParams = () => {
+  useEffect(()=> {
+    handleAuth()
+  }, [handleAuth])
+
+
+  const checkURLParams = (): { code: string, state: string } | null => {
     const urlParams = window.location.href.split("?")[1]
 
     if (urlParams) {
@@ -54,7 +59,7 @@ const LoginModal = () => {
     return null
   }
 
-  const getTokens = async (code) => {
+  const getTokens = async (code: string) => {
     return await axios.get(`http://localhost:3001/tokens?code=${code}`, {
       headers: {
         "Authorization": `Bearer ${import.meta.env.VITE_DLM_API_KEY}`
@@ -62,7 +67,7 @@ const LoginModal = () => {
     })
   }
 
-  const checkState = async (state) => {
+  const checkState = async (state: string) => {
     const res = await axios.post("http://localhost:3001/checkstate", { state: state }, {
       headers: {
         "Authorization": `Bearer ${import.meta.env.VITE_DLM_API_KEY}`

@@ -1,3 +1,5 @@
+import { ManifestObject } from "../destinyTypes/bungieAPIInterfaces"
+
 export const initDB = () => {
   return new Promise((resolve) => {
     const dbRequest = indexedDB.open("store")
@@ -20,7 +22,7 @@ export const initDB = () => {
   })
 }
 
-export const putData = (data) => {
+export const putData = (data: ManifestObject) => {
   return new Promise((resolve) => {
     const dbRequest = indexedDB.open("store", 1)
 
@@ -43,7 +45,7 @@ export const putData = (data) => {
   })
 }
 
-export const readManifest = (path) => {
+export const readManifest = (path: string) => {
   return new Promise((resolve) => {
     const dbRequest = indexedDB.open("store", 1)
 

@@ -1,6 +1,7 @@
 import { createContext } from "react"
 import axios from "axios"
 import { initDB, putData } from "./indexedDBHandler"
+import { Components, DestinyMembership, ManifestObject, ProfileItem, Tokens, User } from "../destinyTypes/bungieAPIInterfaces"
 
 const APIContext = createContext({
   refresh_token: () => {},
@@ -11,12 +12,12 @@ const APIContext = createContext({
   getItems: () => {}
 })
 
-/* eslint-disable react/prop-types */
-export const APIContextProvider = ({ children }) => {
+export const APIContextProvider = ({ children }: { children: React.JSX.Element }) => {
 
-  const getDestinyAPIManifest = async (components, whitelist) => {
-    const manifest = {}
-    const manifests = whitelist.map(p => `Destiny${p}Definition`).map(async (path) => {
+  const getDestinyAPIManifest = async (components: Components, whitelist: string[]) => {
+    const manifest = {} as ManifestObject
+
+    const manifests = whitelist.map((p: string) => `Destiny${p}Definition`).map(async (path: string) => {
       const manifestContent = await axios.get(`https://www.bungie.net${components[path]}`)
       manifest[path] = manifestContent.data
     })
@@ -25,8 +26,8 @@ export const APIContextProvider = ({ children }) => {
   }
 
   const getProfile = async () => {
-    const user = JSON.parse(localStorage.getItem("primaryID"))
-    const tokens = JSON.parse(localStorage.getItem("tokens"))
+    const user = JSON.parse(localStorage.getItem("primaryID")!) as User
+    const tokens = JSON.parse(localStorage.getItem("tokens")!) as Tokens
     const response = await axios.get(`https://www.bungie.net/Platform/Destiny2/${user.type}/Profile/${user.id}`, {
       headers: {
         "x-api-key": `${import.meta.env.VITE_BUNGIE_API_KEY}`,
@@ -42,7 +43,7 @@ export const APIContextProvider = ({ children }) => {
 
   const getItemsFromProfile = () => {
     const test = getProfile().then((profile) => {
-      const vaultItems = profile.profileInventory.data.items.filter(item => item.itemInstanceId != null)
+      const vaultItems = profile.profileInventory.data.items.filter((item: ProfileItem) => item.itemInstanceId != undefined) as Array<ProfileItem>
     })
   }
 
@@ -64,7 +65,7 @@ export const APIContextProvider = ({ children }) => {
     if (checkManifestCache(version)) { return null }
     let manifest = {}
     try {
-      const components = res.data.Response.jsonWorldComponentContentPaths.en // Hardcoding en because I speak english idk
+      const components = res.data.Response.jsonWorldComponentContentPaths.en as Components // Hardcoding en because I speak english idk
       manifest = await getDestinyAPIManifest(components, whitelist)
     } catch (error) {
       localStorage.removeItem("manifest-version")
@@ -74,7 +75,7 @@ export const APIContextProvider = ({ children }) => {
     return manifest
   }
 
-  const checkManifestCache = (version) => {
+  const checkManifestCache = (version: string) => {
     const storedVersion = localStorage.getItem("manifest-version")
     if (!storedVersion || storedVersion !== version) {
       localStorage.setItem("manifest-version", version)
@@ -99,7 +100,7 @@ export const APIContextProvider = ({ children }) => {
   }
 
   const setPrimaryMembershipID = async () => {
-    const tokens = JSON.parse(localStorage.getItem("tokens"))
+    const tokens = JSON.parse(localStorage.getItem("tokens")!) as Tokens
     const res = await axios.get("https://www.bungie.net/Platform/User/GetMembershipsForCurrentUser/", {
       headers: {
         "Authorization": `Bearer ${tokens.access_token}`,
@@ -107,7 +108,7 @@ export const APIContextProvider = ({ children }) => {
       }
     })
 
-    res.data.Response.destinyMemberships.forEach((membership) => {
+    res.data.Response.destinyMemberships.forEach((membership: DestinyMembership) => {
       if (membership.membershipId == res.data.Response.primaryMembershipId) {
         const primaryID = {
           name: `${membership.bungieGlobalDisplayName}#${membership.bungieGlobalDisplayNameCode}`,
@@ -120,7 +121,7 @@ export const APIContextProvider = ({ children }) => {
   }
 
   const refreshAccessToken = async () => {
-    const tokens = JSON.parse(localStorage.getItem("tokens"))
+    const tokens = JSON.parse(localStorage.getItem("tokens")!) as Tokens
     const authHeader = btoa(`46609:${import.meta.env.VITE_CLIENT_SECRET}`)
     const res = await axios.post("https://www.bungie.net/platform/app/oauth/token", { grant_type: "refresh_token", refresh_token: tokens.refresh_token }, {
       headers: {
@@ -141,7 +142,7 @@ export const APIContextProvider = ({ children }) => {
     if (error?.response?.status === 401) {
       const originalRequest = error.config
       await refreshAccessToken()
-      const tokens = JSON.parse(localStorage.getItem("tokens"))
+      const tokens = JSON.parse(localStorage.getItem("tokens")!) as Tokens
 
       originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`
       return axios(originalRequest)
