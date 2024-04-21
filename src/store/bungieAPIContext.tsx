@@ -34,17 +34,19 @@ export const APIContextProvider = ({ children }: { children: React.JSX.Element }
         Authorization: `Bearer ${tokens.access_token}`
       },
       params: {
-        components: "100,102,200,201"
+        components: "100,102,200,201,205,206"
       }
     })
 
     return response.data.Response
   }
 
-  const getItemsFromProfile = () => {
-    const test = getProfile().then((profile) => {
-      const vaultItems = profile.profileInventory.data.items.filter((item: ProfileItem) => item.itemInstanceId != undefined) as Array<ProfileItem>
-    })
+  const getItemsFromProfile = async () => {
+    // This is a mess right now I need to figure out how to structure the data
+    const profile = await getProfile()
+    const vaultItems = profile.profileInventory.data.items.filter((item: ProfileItem) => item.itemInstanceId != undefined) as Array<ProfileItem>
+    const characterItems = profile.characterInventories.data
+    console.log(characterItems)
   }
 
   const getDestinyManifest = async () => {
@@ -95,7 +97,7 @@ export const APIContextProvider = ({ children }: { children: React.JSX.Element }
     }
 
     if (await initDB()) {
-      putData(manifest)
+      putData(manifest, "destiny2-manifest")
     }
   }
 

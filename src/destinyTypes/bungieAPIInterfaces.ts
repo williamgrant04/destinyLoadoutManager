@@ -1,3 +1,5 @@
+import { ItemBindStatus, ItemLocation, TransferStatuses } from "./destinyEnums"
+
 export interface Components {
   [key: string]: string
 }

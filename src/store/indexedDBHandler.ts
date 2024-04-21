@@ -22,7 +22,7 @@ export const initDB = () => {
   })
 }
 
-export const putData = (data: ManifestObject) => {
+export const putData = (data: ManifestObject, key: string) => {
   return new Promise((resolve) => {
     const dbRequest = indexedDB.open("store", 1)
 
@@ -30,7 +30,7 @@ export const putData = (data: ManifestObject) => {
       const db = dbRequest.result
       const transaction = db.transaction("store", "readwrite")
       const store = transaction.objectStore("store")
-      store.put(data, "destiny2-manifest")
+      store.put(data, key)
       resolve(data)
     }
 
