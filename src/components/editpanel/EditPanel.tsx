@@ -1,9 +1,12 @@
 import styled from "styled-components"
+import ClassSelector from "./ClassSelector"
+import SubclassSelector from "./subclass/SubclassSelector"
 
 const EditPanel = (): React.JSX.Element => {
   return (
     <EditBackdrop>
-
+      <SubclassSelector/>
+      <ClassSelector/>
     </EditBackdrop>
   )
 }

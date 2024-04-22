@@ -1,20 +1,16 @@
-import { useContext, useState } from "react"
+import { useState } from "react"
 import LoadoutButton from "./LoadoutButton"
 import { styled } from "styled-components"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
-import APIContext from "../../store/bungieAPIContext"
 
 
 
 const LoadoutPanel = (): React.JSX.Element => {
   const [panelOpen, setPanelOpen] = useState(false)
-  const api = useContext(APIContext)
 
   const pillClickHandler = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     setPanelOpen(!panelOpen)
-
-    api.getItems()
 
     if (panelOpen) {
       (event.currentTarget as HTMLElement).parentElement!.style.left = "-20%"
