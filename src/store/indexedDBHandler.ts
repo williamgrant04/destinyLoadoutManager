@@ -1,7 +1,7 @@
-import { ManifestObject } from "../destinyTypes/bungieAPIInterfaces"
+import { StoredUser } from "../destinyTypes/bungieInterfaces"
 
 export const initDB = () => {
-  return new Promise((resolve) => {
+  return new Promise<boolean>((resolve) => {
     const dbRequest = indexedDB.open("store")
 
     dbRequest.onerror = (e) => {
@@ -22,8 +22,8 @@ export const initDB = () => {
   })
 }
 
-export const putData = (data: ManifestObject, key: string) => {
-  return new Promise((resolve) => {
+export const putData = (data: object, key: string) => {
+  return new Promise<object | string>((resolve) => {
     const dbRequest = indexedDB.open("store", 1)
 
     dbRequest.onsuccess = () => {
@@ -46,7 +46,7 @@ export const putData = (data: ManifestObject, key: string) => {
 }
 
 export const readManifest = (path: string) => {
-  return new Promise((resolve) => {
+  return new Promise<object | string>((resolve) => {
     const dbRequest = indexedDB.open("store", 1)
 
     dbRequest.onsuccess = () => {
@@ -65,6 +65,31 @@ export const readManifest = (path: string) => {
         resolve(error)
       } else {
         resolve("Unknown error")
+      }
+    }
+  })
+}
+
+export const readProfile = (key: string) => {
+  return new Promise<StoredUser>((resolve, reject) => {
+    const dbRequest = indexedDB.open("store", 1)
+
+    dbRequest.onsuccess = () => {
+      const db = dbRequest.result
+      const transaction = db.transaction("store", "readonly")
+      const store = transaction.objectStore("store")
+      const response = store.get(key)
+      response.onsuccess = () => {
+        resolve(response.result)
+      }
+    }
+
+    dbRequest.onerror = () => {
+      const error = dbRequest.error?.message
+      if (error) {
+        reject(error)
+      } else {
+        reject("Unknown error")
       }
     }
   })

@@ -1,15 +1,14 @@
 import { createContext } from "react"
 import axios from "axios"
 import { initDB, putData } from "./indexedDBHandler"
-import { Components, DestinyMembership, ManifestObject, ProfileItem, Tokens, User } from "../destinyTypes/bungieAPIInterfaces"
+import { Components, DestinyMembership, ManifestObject, Tokens, User } from "../destinyTypes/bungieInterfaces"
+import { QueryComponents } from "../destinyTypes/destinyEnums"
 
 const APIContext = createContext({
-  refresh_token: () => {},
   setPrimaryID: () => {},
-  getManifest: () => {},
   saveManifest: () => {},
-  getProfile: () => {},
-  getItems: () => {}
+  saveProfile: () => {},
+  authenticated: false
 })
 
 export const APIContextProvider = ({ children }: { children: React.JSX.Element }) => {
@@ -25,7 +24,16 @@ export const APIContextProvider = ({ children }: { children: React.JSX.Element }
     return manifest
   }
 
-  const getProfile = async () => {
+  const saveProfile = async (): Promise<undefined> => {
+    const queryComponents = [
+      QueryComponents.Profiles,
+      QueryComponents.ProfileInventories,
+      QueryComponents.Characters,
+      QueryComponents.CharacterInventories,
+      QueryComponents.CharacterEquipment,
+      QueryComponents.CharacterLoadouts
+    ]
+
     const user = JSON.parse(localStorage.getItem("primaryID")!) as User
     const tokens = JSON.parse(localStorage.getItem("tokens")!) as Tokens
     const response = await axios.get(`https://www.bungie.net/Platform/Destiny2/${user.type}/Profile/${user.id}`, {
@@ -34,19 +42,13 @@ export const APIContextProvider = ({ children }: { children: React.JSX.Element }
         Authorization: `Bearer ${tokens.access_token}`
       },
       params: {
-        components: "100,102,200,201,205,206"
+        components: `${queryComponents.join(",")}`
       }
     })
 
-    return response.data.Response
-  }
-
-  const getItemsFromProfile = async () => {
-    // This is a mess right now I need to figure out how to structure the data
-    const profile = await getProfile()
-    const vaultItems = profile.profileInventory.data.items.filter((item: ProfileItem) => item.itemInstanceId != undefined) as Array<ProfileItem>
-    const characterItems = profile.characterInventories.data
-    console.log(characterItems)
+    if (await initDB()) {
+      putData(response.data.Response, "user-profile")
+    }
   }
 
   const getDestinyManifest = async () => {
@@ -135,6 +137,7 @@ export const APIContextProvider = ({ children }: { children: React.JSX.Element }
     localStorage.setItem("tokens", JSON.stringify(res.data))
   }
 
+  // Interceptor to refresh access token when it expires, it should feel seemless to the user (i can only hope)
   axios.interceptors.response.use((response) => {
     // Successful response
     console.log(response)
@@ -155,12 +158,10 @@ export const APIContextProvider = ({ children }: { children: React.JSX.Element }
 
   return (
     <APIContext.Provider value={{
-      refresh_token: refreshAccessToken,
       setPrimaryID: setPrimaryMembershipID,
-      getManifest: getDestinyManifest,
       saveManifest: saveManifestToIndexedDB,
-      getProfile: getProfile,
-      getItems: getItemsFromProfile
+      saveProfile: saveProfile,
+      authenticated: false
     }}>
       { children }
     </APIContext.Provider>

@@ -7,7 +7,7 @@ import APIContext from "../../store/bungieAPIContext"
 
 const LoginModal = (): React.JSX.Element => {
   ReactModal.setAppElement("#root")
-  const api = useContext(APIContext)
+  const bungieAPI = useContext(APIContext)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [bungieUrl, setBungieUrl] = useState("")
@@ -24,7 +24,8 @@ const LoginModal = (): React.JSX.Element => {
         // I fucking hate promises
         getTokens(params.code).then((response) => {
           localStorage.setItem("tokens", JSON.stringify(response.data))
-          api.setPrimaryID()
+          bungieAPI.setPrimaryID()
+          bungieAPI.authenticated = true
           setModalOpen(false)
         })
       } else {
@@ -36,7 +37,7 @@ const LoginModal = (): React.JSX.Element => {
         }).then(response => setBungieUrl(response.data))
       }
     }
-  }, [api])
+  }, [bungieAPI])
 
   useEffect(()=> {
     handleAuth()
