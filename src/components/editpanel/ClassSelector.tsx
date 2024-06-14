@@ -1,70 +1,52 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState, useLayoutEffect } from "react"
 import styled from "styled-components"
-import { initDB, readProfile } from "../../store/indexedDBHandler"
-import { User, Character } from "../../destinyTypes/bungieInterfaces"
+import { User } from "../../destinyTypes/bungieInterfaces"
 import { ClassType } from "../../destinyTypes/destinyEnums"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons"
 import ClassDropdown from "./ClassDropdown"
+import characterContext from "../../store/characterContext"
 
-interface EmblemProps {
+interface ActiveProps {
   $backgroundImage: string,
   $active: boolean
 }
 
 const ClassSelector = (): React.JSX.Element => {
+  const chars = useContext(characterContext)
   const [displayName, setDisplayName] = useState("")
   const [emblemUrl, setEmblemUrl] = useState("")
-  const [activeCharacter, setActiveCharacter] = useState(["", Object as unknown as Character])
-  const [dropdownOpen, setDropdownOpen] = useState(false)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    console.log(chars.characters)
     if (localStorage.getItem("primaryID") !== null) {
       const user = JSON.parse(localStorage.getItem("primaryID")!) as User
       setDisplayName(user.name)
     }
 
-    initDB().then(success => {
-      if (success) {
-        readProfile("user-profile").then((profile) => {
-          // Get first character
-          const character = Object.entries(profile.characters.data)[0]
-          if (localStorage.getItem("activeCharacter") !== null) {
-            setActiveCharacter(JSON.parse(localStorage.getItem("activeCharacter")!))
-          } else {
-            // First index on character is the character ID
-            localStorage.setItem("activeCharacter", JSON.stringify(character))
-            setActiveCharacter([character[0], character[1] as Character])
-          }
-          const largeEmblemPath = (activeCharacter[1] as Character).emblemBackgroundPath
-          if (largeEmblemPath !== undefined) { setEmblemUrl(`https://www.bungie.net${largeEmblemPath}`) }
-        })
-      }
-    })
-  }, [activeCharacter])
+    const largeEmblemPath = chars.activeCharacter?.emblemBackgroundPath
+    if (largeEmblemPath !== undefined) { setEmblemUrl(`https://www.bungie.net${largeEmblemPath}`) }
+  }, [chars, chars.activeCharacter])
 
   useEffect(() => {
-    console.log("dropdown: ", dropdownOpen)
-  }, [dropdownOpen])
+    chars.initChar()
+  }, [chars.characterDropdownOpen])
 
   return (
-    <>
-      <Emblem $backgroundImage={emblemUrl} $active={dropdownOpen} onClick={()=> {setDropdownOpen(!dropdownOpen)}}>
+    <Wrapper>
+      <Active $backgroundImage={emblemUrl} $active={chars.characterDropdownOpen} onClick={() => {chars.setDropdownOpen(!chars.characterDropdownOpen)}}>
         <ClassText>
           <h2>{displayName}</h2>
-          <h3>{ClassType[(activeCharacter[1] as Character).classType]}</h3>
+          <h3>{ClassType[chars.activeCharacter?.classType]}</h3>
         </ClassText>
         <FontAwesomeIcon icon={faAngleDown}/>
-      </Emblem>
-      { dropdownOpen && <ClassDropdown characters={[""]}/> }
-    </>
+      </Active>
+      <ClassDropdown characters={chars.characters} username={displayName} open={chars.characterDropdownOpen}/>
+    </Wrapper>
   )
 }
 
-const Emblem = styled.div<EmblemProps>`
-  position: absolute;
-  right: 10px;
-  top: 10px;
+const Active = styled.div<ActiveProps>`
   height: 75px;
   width: 370px;
   display: flex;
@@ -82,6 +64,16 @@ const Emblem = styled.div<EmblemProps>`
     transition: 0.3s;
     transform: rotate(${props => props.$active ? "0deg" : "90deg"});
   }
+`
+
+const Wrapper = styled.div`
+  z-index: 100;
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `
 
 const ClassText = styled.div`

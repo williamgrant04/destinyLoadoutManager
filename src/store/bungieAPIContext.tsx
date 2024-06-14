@@ -4,6 +4,8 @@ import { initDB, putData } from "./indexedDBHandler"
 import { Components, DestinyMembership, ManifestObject, Tokens, User } from "../destinyTypes/bungieInterfaces"
 import { QueryComponents } from "../destinyTypes/destinyEnums"
 
+// TODO: Set up authenticated boolean (lower priority than getting class selection working)
+
 const APIContext = createContext({
   setPrimaryID: () => {},
   saveManifest: () => {},
@@ -45,6 +47,8 @@ export const APIContextProvider = ({ children }: { children: React.JSX.Element }
         components: `${queryComponents.join(",")}`
       }
     })
+
+    console.log(response.data.Response)
 
     if (await initDB()) {
       putData(response.data.Response, "user-profile")

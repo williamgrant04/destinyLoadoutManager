@@ -8,10 +8,10 @@ const App = () => {
   const bungieAPI = useContext(APIContext)
 
   useEffect(() => {
-    // if (bungieAPI.authenticated) {
-    //   bungieAPI.saveProfile()
-    //   bungieAPI.saveManifest()
-    // }
+    if (bungieAPI.authenticated) {
+      bungieAPI.saveProfile()
+      bungieAPI.saveManifest()
+    }
   }, [bungieAPI])
 
 
