@@ -12,6 +12,7 @@ const EditPanel = (): React.JSX.Element => {
 }
 
 const EditBackdrop = styled.div`
+  overflow-y: scroll;
   border-left: 1px solid grey;
   background-color: rgb(219, 219, 219);
   position: fixed;

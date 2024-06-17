@@ -1,4 +1,4 @@
-import { StoredUser } from "../destinyTypes/bungieInterfaces"
+import { ManifestObject, StoredUser } from "../destinyTypes/bungieInterfaces"
 
 export const initDB = () => {
   return new Promise<boolean>((resolve) => {
@@ -46,7 +46,7 @@ export const putData = (data: object, key: string) => {
 }
 
 export const readManifest = (path: string) => {
-  return new Promise<object | string>((resolve) => {
+  return new Promise<ManifestObject>((resolve) => {
     const dbRequest = indexedDB.open("store", 1)
 
     dbRequest.onsuccess = () => {
@@ -62,9 +62,7 @@ export const readManifest = (path: string) => {
     dbRequest.onerror = () => {
       const error = dbRequest.error?.message
       if (error) {
-        resolve(error)
-      } else {
-        resolve("Unknown error")
+        console.error(error)
       }
     }
   })

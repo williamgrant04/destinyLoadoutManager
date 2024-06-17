@@ -20,7 +20,7 @@ const ClassDropdown = (props: { characters: Array<Character>, username: string, 
   }, [props.open])
 
   const handleSelectCharacterClick = (charId: string) => {
-    console.log(charId)
+    if (chars.activeCharacter.characterId === charId) { return }
     chars.setDropdownOpen(false)
     chars.changeActiveCharacter(charId)
   }

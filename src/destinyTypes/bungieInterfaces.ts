@@ -5,7 +5,9 @@ export interface Components {
 }
 
 export interface ManifestObject {
-  [key: string]: string;
+  [key: string]: {
+    [key: string]: any;
+  };
 }
 
 export interface Tokens {
@@ -114,6 +116,26 @@ export interface StoredUser {
       items: Array<object>;
     };
   };
+
+  itemComponents: {
+    perks: {
+      data: {
+        [key: string]: {
+          perks: Array<object>;
+        };
+      }
+      privacy: number;
+    };
+
+    sockets: {
+      data: {
+        [key: string]: {
+          sockets: Array<object>;
+        };
+      }
+      privacy: number;
+    }
+  }
 }
 
 export interface Character {
@@ -139,4 +161,19 @@ export interface Character {
   raceType: number;
   stats: { [key: string]: number }; // Unsure if these change
   titleRecordHash: number;
+}
+
+export interface Item {
+  bindStatus: number;
+  bucketHash: number;
+  dismantlePermission: number;
+  isWrapper: boolean;
+  itemHash: number;
+  itemInstanceId: string;
+  location: number;
+  lockable: boolean;
+  quantity: number;
+  state: number;
+  transferStatus: number;
+  versionNumber: number;
 }

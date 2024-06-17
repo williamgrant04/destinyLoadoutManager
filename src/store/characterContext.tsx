@@ -24,21 +24,29 @@ export const CharacterContextProvider = ({ children }: { children: React.JSX.Ele
 
   const initChar = () => {
     initDB().then(success => {
-      if (success) {
-        readProfile("user-profile").then((profile) => {
-          // Get first character
-          const character = Object.values(profile.characters.data)[0]
-          if (localStorage.getItem("activeCharacter") !== null) {
-            setActiveCharacter(JSON.parse(localStorage.getItem("activeCharacter")!))
-          } else {
-            // First index on character is the character ID
-            localStorage.setItem("activeCharacter", JSON.stringify(character))
-            setActiveCharacter(character)
-          }
-          const { [activeCharacter.characterId]: _, ...others } = profile.characters.data
+      if (!success) { return }
+
+      readProfile("user-profile").then((profile) => {
+        // Get first character
+        const character = Object.values(profile.characters.data)[0]
+
+        if (localStorage.getItem("activeCharacter") !== null) {
+          const storedChar = JSON.parse(localStorage.getItem("activeCharacter")!) as Character
+
+          if (activeCharacter.characterId === storedChar.characterId) { return }
+          setActiveCharacter(storedChar)
+
+          const { [storedChar.characterId]: _, ...others } = profile.characters.data
           setCharacters(Object.values(others))
-        })
-      }
+
+        } else {
+
+          localStorage.setItem("activeCharacter", JSON.stringify(character))
+          setActiveCharacter(character)
+          const { [character.characterId]: _, ...others } = profile.characters.data
+          setCharacters(Object.values(others))
+        }
+      })
     })
   }
 

@@ -18,7 +18,6 @@ const ClassSelector = (): React.JSX.Element => {
   const [emblemUrl, setEmblemUrl] = useState("")
 
   useLayoutEffect(() => {
-    console.log(chars.characters)
     if (localStorage.getItem("primaryID") !== null) {
       const user = JSON.parse(localStorage.getItem("primaryID")!) as User
       setDisplayName(user.name)
@@ -26,11 +25,11 @@ const ClassSelector = (): React.JSX.Element => {
 
     const largeEmblemPath = chars.activeCharacter?.emblemBackgroundPath
     if (largeEmblemPath !== undefined) { setEmblemUrl(`https://www.bungie.net${largeEmblemPath}`) }
-  }, [chars, chars.activeCharacter])
+  }, [chars.activeCharacter])
 
   useEffect(() => {
     chars.initChar()
-  }, [chars.characterDropdownOpen])
+  }, [])
 
   return (
     <Wrapper>
@@ -68,8 +67,8 @@ const Active = styled.div<ActiveProps>`
 
 const Wrapper = styled.div`
   z-index: 100;
-  position: absolute;
-  right: 15px;
+  position: fixed;
+  right: 30px;
   top: 15px;
   display: flex;
   flex-direction: column;

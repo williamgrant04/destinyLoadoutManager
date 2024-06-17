@@ -33,7 +33,9 @@ export const APIContextProvider = ({ children }: { children: React.JSX.Element }
       QueryComponents.Characters,
       QueryComponents.CharacterInventories,
       QueryComponents.CharacterEquipment,
-      QueryComponents.CharacterLoadouts
+      QueryComponents.CharacterLoadouts,
+      QueryComponents.ItemPerks,
+      QueryComponents.ItemSockets // Not sure if I need this but I'm adding it just in case
     ]
 
     const user = JSON.parse(localStorage.getItem("primaryID")!) as User
